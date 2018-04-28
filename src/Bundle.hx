@@ -10,6 +10,23 @@ class Bundle
 	 */
 	macro static public function load(classRef:Expr)
 	{
+		return buildLoaderExpr(classRef);
+	}
+
+	/**
+	 * Returns a function that, when called, returns a Promise<Class<...>>
+	 */
+	macro static public function deferredLoader(classRef:Expr)
+	{
+		var loader = buildLoaderExpr(classRef);
+		return macro function() {
+			return ( $loader ).then(function(ignore) { return $classRef; });
+		}
+	}
+
+#if macro
+	static public function buildLoaderExpr(classRef:Expr)
+	{
 		switch (Context.typeof(classRef))
 		{
 			case Type.TType(_.get() => t, _):
@@ -46,6 +63,7 @@ class Bundle
 		}
 		return macro {};
 	}
+#end
 
 	macro static public function loadLib(libNameExpr:Expr, pkgListExpr:Expr)
 	{
